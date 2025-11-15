@@ -186,10 +186,20 @@ def get_scene_info(examples_dir: str) -> List[Dict[str, Any]]:
 
 
 def cleanup_memory() -> None:
-    """Clean up GPU memory and garbage collect."""
+    """Clean up GPU memory and garbage collect using shared utils.
+
+    This delegates to the centralized CUDA cleanup so Gradio and backend
+    behave consistently when releasing memory.
+    """
     gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+    try:
+        from depth_anything_3.utils.memory import cleanup_cuda_memory
+
+        cleanup_cuda_memory()
+    except Exception:
+        # Fallback to a minimal safe cleanup if shared utils are unavailable
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 def get_logo_base64() -> Optional[str]:

@@ -191,8 +191,14 @@ class ModelInference:
         # Process results
         processed_data = self._process_results(target_dir, prediction, image_paths)
 
-        # Clean up
-        torch.cuda.empty_cache()
+        # Clean up using centralized memory utilities for consistency with backend
+        try:
+            from depth_anything_3.utils.memory import cleanup_cuda_memory
+
+            cleanup_cuda_memory()
+        except Exception:
+            # Fallback
+            torch.cuda.empty_cache()
 
         return prediction, processed_data
 
@@ -281,6 +287,11 @@ class ModelInference:
 
     def cleanup(self) -> None:
         """Clean up GPU memory."""
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        try:
+            from depth_anything_3.utils.memory import cleanup_cuda_memory
+
+            cleanup_cuda_memory()
+        except Exception:
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
         gc.collect()
