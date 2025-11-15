@@ -27,6 +27,7 @@ import numpy as np
 import torch
 
 from depth_anything_3.api import DepthAnything3
+from depth_anything_3.utils.memory import cleanup_cuda_memory
 from depth_anything_3.utils.export.glb import export_to_glb
 from depth_anything_3.utils.export.gs import export_to_gs_video
 
@@ -193,11 +194,8 @@ class ModelInference:
 
         # Clean up using centralized memory utilities for consistency with backend
         try:
-            from depth_anything_3.utils.memory import cleanup_cuda_memory
-
             cleanup_cuda_memory()
         except Exception:
-            # Fallback
             torch.cuda.empty_cache()
 
         return prediction, processed_data
@@ -288,8 +286,6 @@ class ModelInference:
     def cleanup(self) -> None:
         """Clean up GPU memory."""
         try:
-            from depth_anything_3.utils.memory import cleanup_cuda_memory
-
             cleanup_cuda_memory()
         except Exception:
             if torch.cuda.is_available():

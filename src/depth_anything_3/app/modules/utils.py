@@ -25,8 +25,9 @@ import os
 import shutil
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
+from depth_anything_3.utils.memory import cleanup_cuda_memory
 import numpy as np
-import torch
+ 
 
 
 def create_depth_visualization(depth: np.ndarray) -> Optional[np.ndarray]:
@@ -192,14 +193,8 @@ def cleanup_memory() -> None:
     behave consistently when releasing memory.
     """
     gc.collect()
-    try:
-        from depth_anything_3.utils.memory import cleanup_cuda_memory
-
-        cleanup_cuda_memory()
-    except Exception:
-        # Fallback to a minimal safe cleanup if shared utils are unavailable
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+    # Use canonical helper from shared memory utils
+    cleanup_cuda_memory()
 
 
 def get_logo_base64() -> Optional[str]:
